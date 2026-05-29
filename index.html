@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>מעקב ניסויים — אלוורה</title>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root {
+  --bg: #f5f3ee;
+  --surface: #ffffff;
+  --surface2: #f0ede6;
+  --border: #ddd9d0;
+  --text: #1a1814;
+  --text2: #6b6760;
+  --text3: #9e9b96;
+  --accent: #2d6a4f;
+  --accent-light: #d8f3dc;
+  --accent2: #40916c;
+  --warning: #b5451b;
+  --warning-light: #fde8e0;
+  --gold: #c77b2e;
+  --gold-light: #fef3e2;
+  --radius: 10px;
+  --radius-sm: 6px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Heebo', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  font-size: 14px;
+}
+/* LAYOUT */
+.app { display: flex; flex-direction: column; min-height: 100vh; }
+.header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 56px;
+  position: sticky; top: 0; z-index: 100;
+}
+.header-title { font-size: 15px; font-weight: 600; color: var(--text); display: flex; align-items: center; gap: 8px; }
+.header-title span { color: var(--accent2); }
+.header-actions { display: flex; align-items: center; gap: 10px; }
+.save-indicator {
+  font-size: 12px; color: var(--text3);
+  display: flex; align-items: center; gap: 5px;
+  transition: color 0.3s;
+}
+.save-indicator.saved { color: var(--accent2); }
+.save-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--text3); transition: background 0.3s;
+}
+.save-indicator.saved .save-dot { background: var(--accent2); }
+.export-btn {
+  display: flex; align-items: center; gap: 6px;
+  background: var(--accent); color: #fff;
+  border: none; border-radius: var(--radius-sm);
+  padding: 7px 14px; font-size: 13px; font-weight: 500;
+  cursor: pointer; font-family: 'Heebo', sans-serif;
+  transition: background 0.15s;
+}
+.export-btn:hover { background: #1b4332; }
+.export-btn svg { width: 15px; height: 15px; }
+.btn-danger {
+  background: none; border: 1px solid var(--border);
+  color: var(--warning); font-size: 12px; padding: 6px 12px;
+  border-radius: var(--radius-sm); cursor: pointer;
+  font-family: 'Heebo', sans-serif; transition: all 0.15s;
+}
+.btn-danger:hover { background: var(--warning-light); }
+.tabs {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 24px;
+  display: flex; gap: 0;
+  position: sticky; top: 56px; z-index: 99;
+}
+.tab {
+  padding: 12px 18px; font-size: 13px; font-weight: 500;
+  color: var(--text2); border: none; background: none;
+  cursor: pointer; border-bottom: 2px solid transparent;
+  margin-bottom: -1px; font-family: 'Heebo', sans-serif;
+  transition: color 0.15s; white-space: nowrap;
+}
+.tab:hover { color: var(--text); }
+.tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+.content { flex: 1; padding: 24px; max-width: 1100px; margin: 0 auto; width: 100%; }
+.panel { display: none; flex-direction: column; gap: 20px; }
+.panel.active { display: flex; }
+/* CARDS */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+}
+.card-title {
+  font-size: 14px; font-weight: 600; color: var(--text);
+  margin-bottom: 16px; padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 8px;
+}
+.card-title-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--accent); flex-shrink: 0;
+}
+/* METRICS */
+.metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.metric {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 18px;
+}
+.metric-label { font-size: 12px; color: var(--text3); margin-bottom: 6px; }
+.metric-value { font-size: 26px; font-weight: 300; color: var(--text); }
+.metric-value.accent { color: var(--accent); }
+/* FORMS */
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+.form-grid.three { grid-template-columns: 1fr 1fr 1fr; }
+.form-grid.four { grid-template-columns: 1fr 1fr 1fr 1fr; }
+.form-group { display: flex; flex-direction: column; gap: 5px; }
+.form-group label { font-size: 12px; color: var(--text2); font-weight: 500; }
+.form-group input,
+.form-group select,
+.form-group textarea {
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Heebo', sans-serif;
+  font-size: 13px;
+  transition: border-color 0.15s;
+}
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none; border-color: var(--accent2);
+  background: #fff;
+}
+.form-group textarea { resize: vertical; min-height: 64px; }
+.section-divider {
+  font-size: 11px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.08em; color: var(--text3);
+  padding: 8px 0 12px; border-bottom: 1px solid var(--border);
+  margin-bottom: 14px;
+}
+.btn-row { display: flex; gap: 8px; justify-content: flex-end; padding-top: 8px; }
+.btn {
+  padding: 8px 16px; border-radius: var(--radius-sm);
+  font-size: 13px; font-weight: 500; cursor: pointer;
+  border: 1px solid var(--border); background: var(--surface);
+  color: var(--text); font-family: 'Heebo', sans-serif;
+  transition: all 0.15s;
+}
+.btn:hover { background: var(--surface2); }
+.btn.primary {
+  background: var(--accent); color: #fff; border-color: var(--accent);
+}
+.btn.primary:hover { background: #1b4332; }
+/* SUCCESS MSG */
+.success-msg {
+  background: var(--accent-light);
+  border: 1px solid #95d5b2;
+  border-radius: var(--radius-sm);
+  padding: 10px 14px; font-size: 13px; color: #1b4332;
+  margin-bottom: 14px; display: none;
+}
+/* TABLE */
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th {
+  text-align: right; padding: 9px 12px;
+  font-size: 11px; font-weight: 600; color: var(--text3);
+  text-transform: uppercase; letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap; background: var(--surface);
+}
+td {
+  padding: 9px 12px; border-bottom: 1px solid var(--border);
+  color: var(--text); vertical-align: middle;
+}
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: var(--bg); }
+td input:focus, td select:focus { outline: 1px solid var(--accent2); border-radius: 3px; background: #fff !important; }
+td input:hover, td select:hover { background: var(--surface2) !important; border-radius: 3px; }
+.id-cell { font-weight: 600; color: var(--accent); }
+
+/* wider editable tables */
+#base-table { min-width: 1450px; table-layout: auto; }
+#flavor-table { min-width: 1120px; table-layout: auto; }
+#base-table th:nth-child(3), #base-table td:nth-child(3) { min-width: 170px; width: 170px; }
+#base-table th:nth-child(13), #base-table td:nth-child(13) { min-width: 120px; width: 120px; }
+#base-table th:nth-child(15), #base-table td:nth-child(15),
+#flavor-table th:last-child, #flavor-table td:last-child { min-width: 82px; width: 82px; text-align: center; }
+.ltr-value { direction: ltr !important; unicode-bidi: isolate; text-align: left !important; white-space: nowrap; overflow: visible; }
+td .edit-ltr, td select.edit-ltr, td input.edit-ltr { direction: ltr !important; unicode-bidi: isolate; text-align: left !important; white-space: nowrap; }
+
+/* BADGES */
+.badge {
+  display: inline-block; padding: 3px 9px;
+  border-radius: 20px; font-size: 11px; font-weight: 500;
+}
+.badge-retest { background: var(--gold-light); color: var(--gold); }
+.badge-winner { background: var(--accent-light); color: var(--accent); }
+.badge-skip { background: var(--warning-light); color: var(--warning); }
+/* COMPARE */
+.compare-selector { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+.compare-btn {
+  padding: 6px 14px; border-radius: 20px;
+  font-size: 12px; font-weight: 500; cursor: pointer;
+  border: 1px solid var(--border); background: var(--surface);
+  color: var(--text2); font-family: 'Heebo', sans-serif;
+  transition: all 0.15s;
+}
+.compare-btn.selected {
+  background: var(--accent); color: #fff; border-color: var(--accent);
+}
+.compare-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; }
+.compare-card {
+  border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 16px; background: var(--surface);
+}
+.compare-id { font-size: 18px; font-weight: 600; color: var(--accent); margin-bottom: 2px; }
+.compare-sub { font-size: 12px; color: var(--text3); margin-bottom: 14px; }
+.bar-row { display: flex; align-items: center; gap: 8px; margin-bottom: 7px; }
+.bar-label { font-size: 12px; color: var(--text2); width: 72px; text-align: right; flex-shrink: 0; }
+.bar-track { flex: 1; height: 5px; background: var(--surface2); border-radius: 3px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 3px; background: var(--accent); }
+.bar-val { font-size: 12px; color: var(--text2); width: 18px; text-align: left; flex-shrink: 0; font-weight: 500; }
+.empty { text-align: center; padding: 32px; color: var(--text3); font-size: 13px; }
+/* RECENT LIST */
+.recent-item {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 10px 0; border-bottom: 1px solid var(--border);
+}
+.recent-item:last-child { border-bottom: none; }
+.recent-type-dot {
+  width: 28px; height: 28px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 600; flex-shrink: 0; margin-top: 1px;
+}
+.dot-base { background: var(--accent-light); color: var(--accent); }
+.dot-flavor { background: var(--gold-light); color: var(--gold); }
+.dot-tasting { background: #e8f4fd; color: #1a6ca8; }
+.recent-info { flex: 1; }
+.recent-id { font-weight: 600; font-size: 13px; }
+.recent-notes { font-size: 12px; color: var(--text2); margin-top: 2px; line-height: 1.4; }
+/* SCORE INPUT helper */
+.score-hint { font-size: 11px; color: var(--text3); }
+
+/* Fix English values inside RTL tables */
+td select[dir="ltr"], td input[dir="ltr"] {
+  direction: ltr !important;
+  text-align: left !important;
+  unicode-bidi: plaintext;
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="header">
+    <div class="header-title">
+      🌿 מערכת מעקב ניסויים &nbsp;<span>אלוורה / משקה ירוק</span>
+    </div>
+    <div class="header-actions">
+      <div class="save-indicator" id="save-indicator">
+        <div class="save-dot"></div>
+        <span id="save-text">טוען...</span>
+      </div>
+      <button class="btn-danger" onclick="confirmReset()">איפוס נתונים</button>
+      <button class="export-btn" onclick="exportToExcel()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+        ייצוא ל-Excel
+      </button>
+    </div>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab active" onclick="switchTab('dashboard')">📊 דאשבורד</button>
+    <button class="tab" onclick="switchTab('base')">💧 בסיס אלוורה</button>
+    <button class="tab" onclick="switchTab('flavor')">🍋 ניסויי טעם</button>
+    <button class="tab" onclick="switchTab('tasting')">👥 פאנל טעימות</button>
+    <button class="tab" onclick="switchTab('compare')">📈 השוואה</button>
+  </nav>
+
+  <main class="content">
+
+    <!-- DASHBOARD -->
+    <div class="panel active" id="tab-dashboard">
+      <div class="metrics" id="metrics"></div>
+      <div class="card">
+        <div class="card-title"><div class="card-title-dot"></div>רשומות אחרונות</div>
+        <div id="recent-list"></div>
+      </div>
+    </div>
+
+    <!-- BASE -->
+    <div class="panel" id="tab-base">
+      <div class="card">
+        <div class="card-title"><div class="card-title-dot"></div>רשומת בסיס חדשה</div>
+        <div id="base-success" class="success-msg">✓ הרשומה נשמרה</div>
+        <div class="form-grid three">
+          <div class="form-group"><label>מזהה (B3, B4...)</label><input id="b-id" placeholder="B3"></div>
+          <div class="form-group"><label>מפעיל</label><input id="b-op" placeholder="שם"></div>
+          <div class="form-group"><label>תאריך</label><input id="b-date" type="date"></div>
+        </div>
+        <div class="form-grid three">
+          <div class="form-group"><label>שיטה</label>
+            <select id="b-method"><option>Short blend</option><option>Long blend</option><option>Cold press</option><option>אחר</option></select>
+          </div>
+          <div class="form-group"><label>פילטר</label>
+            <select id="b-filter"><option>Cheesecloth</option><option>Fine mesh</option><option>אחר</option></select>
+          </div>
+          <div class="form-group"><label>זמן בלנד (שניות)</label><input id="b-blend" type="number" placeholder="10"></div>
+        </div>
+        <div class="form-grid four">
+          <div class="form-group"><label>ג'ל אלוורה (גרם)</label><input id="b-aloe" type="number" placeholder="30"></div>
+          <div class="form-group"><label>מים (גרם)</label><input id="b-water" type="number" placeholder="240"></div>
+          <div class="form-group"><label>נוזל סופי (גרם)</label><input id="b-final" type="number" placeholder="255"></div>
+          <div class="form-group"><label>שאריות בבד (גרם)</label><input id="b-cloth" type="number" placeholder="6"></div>
+        </div>
+        <div class="form-grid three">
+          <div class="form-group"><label>סיבובי השרייה</label><input id="b-soak" type="number" placeholder="0"></div>
+          <div class="form-group"><label>זמן השרייה כולל (דקות)</label><input id="b-soaktime" type="number" placeholder="0"></div>
+          <div class="form-group"></div>
+        </div>
+        <div class="section-divider">ציונים 1–10</div>
+        <div class="form-grid three">
+          <div class="form-group"><label>בהירות</label><input id="b-clarity" type="number" min="1" max="10" placeholder="1-10"></div>
+          <div class="form-group"><label>ריריות</label><input id="b-slim" type="number" min="1" max="10" placeholder="1-10"></div>
+          <div class="form-group"><label>מרירות</label><input id="b-bitter" type="number" min="1" max="10" placeholder="1-10"></div>
+          <div class="form-group"><label>ריח ירוק/חמצון</label><input id="b-smell" type="number" min="1" max="10" placeholder="1-10"></div>
+          <div class="form-group"><label>תחושת פה נקייה</label><input id="b-mouth" type="number" min="1" max="10" placeholder="1-10"></div>
+          <div class="form-group"><label>התאמה לבסיס</label><input id="b-suit" type="number" min="1" max="10" placeholder="1-10"></div>
+        </div>
+        <div class="form-grid">
+          <div class="form-group"><label>החלטה</label>
+            <select id="b-dec"><option>Retest</option><option>Winner</option><option>Skip</option></select>
+          </div>
+          <div class="form-group"><label>הערות</label><input id="b-notes" placeholder="הערות חופשיות"></div>
+        </div>
+        <div class="btn-row">
+          <button class="btn" onclick="clearBase()">נקה</button>
+          <button class="btn primary" onclick="saveBase()">שמור רשומה</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title"><div class="card-title-dot"></div>כל רשומות הבסיס</div>
+        <div class="table-wrap"><table id="base-table"></table></div>
+      </div>
+    </div>
+
+    <!-- FLAVOR -->
+    <div class="panel" id="tab-flavor">
+      <div class="card">
+        <div class="card-title"><div class="card-title-dot"></div>ניסוי טעם חדש</div>
+        <div id="flavor-success" class="success-msg">✓ הרשומה נשמרה</div>
+        <div class="form-grid three">
+          <div class="form-group"><label>מזהה (S2, S1-D...)</label><input id="f-id" placeholder="S2"></div>
+          <div class="form-group"><label>בסיס</label><select id="f-base"></select></div>
+          <div class="form-group"><label>תאריך</label><input id="f-date" type="date"></div>
+        </div>
+        <div class="form-grid three">
+          <div class="form-group"><label>משפחת טעם</label><input id="f-family" placeholder="למון ספארקלינג"></div>
+          <div class="form-group"><label>קרבונציה</label>
+            <select id="f-carb"><option>Sparkling</option><option>Still</option></select>
+          </div>
+          <div class="form-group"><label>טעימה מיידית?</label>
+            <select id="f-tasted-now"><option value="">--</option><option>Yes</option><option>No</option></select>
+          </div>
+        </div>
+        <div class="section-divider">כמויות (גרם)</div>
+        <div class="form-grid four">
+          <div class="form-group"><label>נוזל בסיס</label><input id="f-base-g" type="number" placeholder="100"></div>
+          <div class="form-group"><label>סודה/מים</label><input id="f-soda" type="number" placeholder="90"></div>
+          <div class="form-group"><label>ליים</label><input id="f-lime" type="number" placeholder="0"></div>
+          <div class="form-group"><label>לימון</label><input id="f-lemon" type="number" placeholder="0"></div>
+          <div class="form-group"><label>מלח</label><input id="f-salt" type="number" placeholder="0"></div>
+          <div class="form-group"><label>נענע</label><input id="f-mint" type="number" placeholder="0"></div>
+          <div class="form-group"><label>בזיליקום</label><input id="f-basil" type="number" placeholder="0"></div>
+          <div class="form-group"><label>מלפפון</label><input id="f-cuke" type="number" placeholder="0"></div>
+          <div class="form-group"><label>קלנדולה</label><input id="f-calen" type="number" placeholder="0"></div>
+        </div>
+        <div class="form-group" style="margin-bottom:14px">
+          <label>רכיבים נוספים</label>
+          <input id="f-other" placeholder="כתוב חופשי...">
+        </div>
+        <div class="section-divider">ציונים 1–10</div>
+        <div class="form-grid three">
+          <div class="form-group"><label>רעננות</label><input id="f-fresh" type="number" min="1" max="10" placeholder="1-10"></div>
+          <div class="form-group"><label>איזון חומציות</label><input id="f-acid" type="number" min="1" max="10" placeholder="1-10"></div>
+          <div class="form-group"><label>ריריות</label><input id="f-slim" type="number" min="1" max="10" placeholder="1-10"></div>
+          <div class="form-group"><label>מרירות</label><input id="f-bitter" type="number" min="1" max="10" placeholder="1-10"></div>
+          <div class="form-group"><label>ציון כולל</label><input id="f-overall" type="number" min="1" max="10" placeholder="1-10"></div>
+          <div class="form-group"><label>היית קונה?</label>
+            <select id="f-buy"><option value="">--</option><option>Yes</option><option>No</option><option>Maybe</option></select>
+          </div>
+        </div>
+        <div class="form-grid">
+          <div class="form-group"><label>החלטה</label>
+            <select id="f-dec"><option>Retest</option><option>Winner</option><option>Skip</option></select>
+          </div>
+          <div class="form-group"><label>הערות</label><input id="f-notes" placeholder="הערות חופשיות"></div>
+        </div>
+        <div class="btn-row">
+          <button class="btn" onclick="clearFlavor()">נקה</button>
+          <button class="btn primary" onclick="saveFlavor()">שמור רשומה</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title"><div class="card-title-dot"></div>כל ניסויי הטעם</div>
+        <div class="table-wrap"><table id="flavor-table"></table></div>
+      </div>
+    </div>
+
+    <!-- TASTING -->
+    <div class="panel" id="tab-tasting">
+      <div class="card">
+        <div class="card-title"><div class="card-title-dot"></div>טעימה חדשה</div>
+        <div id="tasting-success" class="success-msg">✓ הרשומה נשמרה</div>
+        <div class="form-grid three">
+          <div class="form-group"><label>שם הטועם</label><input id="t-name" placeholder="שם"></div>
+          <div class="form-group"><label>דגימה</label><select id="t-sample"></select></div>
+          <div class="form-group"><label>תאריך</label><input id="t-date" type="date"></div>
+        </div>
+        <div class="form-grid">
+          <div class="form-group"><label>הקשר (עיוור / עם רקע...)</label><input id="t-ctx" placeholder="עיוור"></div>
+          <div class="form-group"><label>תגובה ראשונה</label><input id="t-react" placeholder="מה אמר מיד?"></div>
+        </div>
+        <div class="form-group" style="margin-bottom:14px">
+          <label>% מהכוס שסיים</label>
+          <input id="t-finish" type="number" min="0" max="100" placeholder="100" style="max-width:160px">
+        </div>
+        <div class="section-divider">ציונים 1–10</div>
+        <div class="form-grid three">
+          <div class="form-group"><label>רעננות</label><input id="t-fresh" type="number" min="1" max="10" placeholder="1-10"></div>
+          <div class="form-group"><label>טעם כולל</label><input id="t-taste" type="number" min="1" max="10" placeholder="1-10"></div>
+          <div class="form-group"><label>תחושת פה</label><input id="t-mouth" type="number" min="1" max="10" placeholder="1-10"></div>
+        </div>
+        <div class="form-grid">
+          <div class="form-group"><label>היית קונה?</label>
+            <select id="t-buy"><option value="">--</option><option>Yes</option><option>No</option><option>Maybe</option></select>
+          </div>
+          <div class="form-group"><label>מחיר מוכן לשלם (₪)</label><input id="t-price" type="number" placeholder="15"></div>
+        </div>
+        <div class="form-group" style="margin-bottom:14px">
+          <label>הערות חופשיות</label>
+          <textarea id="t-comments" placeholder="כל מה שאמר..."></textarea>
+        </div>
+        <div class="btn-row">
+          <button class="btn" onclick="clearTasting()">נקה</button>
+          <button class="btn primary" onclick="saveTasting()">שמור רשומה</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title"><div class="card-title-dot"></div>כל הטעימות</div>
+        <div class="table-wrap"><table id="tasting-table"></table></div>
+      </div>
+    </div>
+
+    <!-- COMPARE -->
+    <div class="panel" id="tab-compare">
+      <div class="card">
+        <div class="card-title"><div class="card-title-dot"></div>השוואת דגימות (עד 4)</div>
+        <div class="compare-selector" id="compare-selector"></div>
+        <div class="compare-grid" id="compare-grid"></div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+const DB = { base: [], flavor: [], tasting: [] };
+
+function g(id){return document.getElementById(id);}
+function v(id){return g(id)?g(id).value.trim():'';}
+function n(id){const x=parseFloat(g(id)?g(id).value:'');return isNaN(x)?'':x;}
+
+function switchTab(t){
+  const names=['dashboard','base','flavor','tasting','compare'];
+  document.querySelectorAll('.tab').forEach((el,i)=>{el.classList.toggle('active',names[i]===t);});
+  document.querySelectorAll('.panel').forEach(el=>el.classList.remove('active'));
+  g('tab-'+t).classList.add('active');
+  if(t==='dashboard')renderDashboard();
+  if(t==='base')renderBaseTable();
+  if(t==='flavor'){populateBaseSelect();renderFlavorTable();}
+  if(t==='tasting'){populateSampleSelect();renderTastingTable();}
+  if(t==='compare')renderCompare();
+}
+
+function badge(dec){
+  const map={Retest:'badge-retest',Winner:'badge-winner',Skip:'badge-skip'};
+  return `<span class="badge ${map[dec]||'badge-retest'}">${dec}</span>`;
+}
+
+function renderDashboard(){
+  const w=DB.flavor.filter(f=>f.dec==='Winner').length+DB.base.filter(b=>b.dec==='Winner').length;
+  const bs=DB.base.map(b=>parseFloat(b.suit)).filter(x=>!isNaN(x));
+  const fs=DB.flavor.map(f=>parseFloat(f.overall)).filter(x=>!isNaN(x));
+  const ab=bs.length?(bs.reduce((a,b)=>a+b,0)/bs.length).toFixed(1):'—';
+  const af=fs.length?(fs.reduce((a,b)=>a+b,0)/fs.length).toFixed(1):'—';
+  g('metrics').innerHTML=`
+    <div class="metric"><div class="metric-label">ניסויי בסיס</div><div class="metric-value accent">${DB.base.length}</div></div>
+    <div class="metric"><div class="metric-label">ניסויי טעם</div><div class="metric-value accent">${DB.flavor.length}</div></div>
+    <div class="metric"><div class="metric-label">ממוצע ציון בסיס</div><div class="metric-value">${ab}</div></div>
+    <div class="metric"><div class="metric-label">Winners</div><div class="metric-value accent">${w}</div></div>`;
+  const recent=[
+    ...DB.base.slice(-3).map(b=>({id:b.id,type:'base',label:b.method,dec:b.dec,notes:b.notes})),
+    ...DB.flavor.slice(-3).map(f=>({id:f.id,type:'flavor',label:f.family,dec:f.dec,notes:f.notes})),
+    ...DB.tasting.slice(-2).map(t=>({id:t.name,type:'tasting',label:t.sample,dec:'',notes:t.react}))
+  ].slice(-6).reverse();
+  g('recent-list').innerHTML=recent.length?recent.map(r=>`
+    <div class="recent-item">
+      <div class="recent-type-dot dot-${r.type}">${r.type==='base'?'B':r.type==='flavor'?'F':'T'}</div>
+      <div class="recent-info">
+        <div class="recent-id">${r.id} &nbsp;<span style="font-weight:400;color:var(--text2);font-size:12px">${r.label}</span>&nbsp;${r.dec?badge(r.dec):''}</div>
+        <div class="recent-notes">${(r.notes||'').substring(0,100)}${r.notes&&r.notes.length>100?'…':''}</div>
+      </div>
+    </div>`).join(''):'<div class="empty">אין רשומות עדיין</div>';
+}
+
+function editableCell(val, field, idx, type='text', opts=null){
+  const ltrFields = ['method','dec','filter'];
+  const isLtr = ltrFields.includes(field);
+  const minWidth = field === 'method' ? '165px' : field === 'dec' ? '110px' : field === 'filter' ? '130px' : type === 'number' ? '54px' : '105px';
+  const align = type === 'number' ? 'center' : (isLtr ? 'left' : 'right');
+  const dir = isLtr ? 'ltr' : 'rtl';
+  const ltrClass = isLtr ? 'edit-ltr' : '';
+  const tdStyle = `min-width:${minWidth};width:${minWidth};${isLtr?'direction:ltr;text-align:left;':''}`;
+  if(opts){
+    const optsHtml=opts.map(o=>`<option value="${o}"${val===o?' selected':''}>${o}</option>`).join('');
+    return `<td style="${tdStyle}"><select class="${ltrClass}" onchange="updateBase(${idx},'${field}',this.value)" dir="${dir}" style="border:none;background:transparent;font-family:inherit;font-size:13px;color:var(--text);width:${minWidth};min-width:${minWidth};cursor:pointer;text-align:${align};direction:${dir};padding:2px 4px;">${optsHtml}</select></td>`;
+  }
+  return `<td style="${tdStyle}"><input class="${ltrClass}" type="${type}" value="${val??''}" onchange="updateBase(${idx},'${field}',this.value)" dir="${dir}" style="border:none;background:transparent;font-family:inherit;font-size:13px;color:var(--text);width:${minWidth};min-width:${minWidth};text-align:${align};direction:${dir};" /></td>`;
+}
+
+function updateBase(idx, field, val){
+  const parsed = ['blend','aloe','water','soak','soaktime','final','cloth','clarity','slim','bitter','smell','mouth','suit'].includes(field) ? (val===''?'':parseFloat(val)) : val;
+  DB.base[idx][field] = parsed;
+  persistDB();
+  renderDashboard();
+}
+
+
+function deleteBase(idx){
+  const rec = DB.base[idx];
+  if(!rec) return;
+  if(confirm('למחוק את רשומת הבסיס '+rec.id+'?')){
+    DB.base.splice(idx,1);
+    // אם יש ניסויי טעם שמבוססים על הרשומה שנמחקה, משאירים אותם אבל מסמנים בסיס חסר
+    DB.flavor.forEach(f=>{ if(f.base===rec.id) f.notes = ((f.notes||'') + ' | שים לב: בסיס '+rec.id+' נמחק.').trim(); });
+    persistDB();
+    renderBaseTable();
+    renderDashboard();
+    populateBaseSelect();
+    renderFlavorTable();
+  }
+}
+
+function renderBaseTable(){
+  const t=g('base-table');
+  if(!DB.base.length){t.innerHTML='<tr><td class="empty">אין רשומות</td></tr>';return;}
+  t.innerHTML=`<tr>${['מזהה','מפעיל','שיטה','בלנד (שנ)','נוזל (g)','שאריות בבד','בהירות','ריריות','מרירות','ריח','תחושת פה','התאמה','החלטה','הערות','פעולות'].map(h=>`<th>${h}</th>`).join('')}</tr>`+
+  DB.base.map((b,i)=>`<tr>
+    <td class="id-cell">${b.id}</td>
+    ${editableCell(b.op,'op',i)}
+    ${editableCell(b.method,'method',i,'text',['Short blend','Long blend','Cold press','אחר'])}
+    ${editableCell(b.blend,'blend',i,'number')}
+    ${editableCell(b.final,'final',i,'number')}
+    ${editableCell(b.cloth,'cloth',i,'number')}
+    ${editableCell(b.clarity,'clarity',i,'number')}
+    ${editableCell(b.slim,'slim',i,'number')}
+    ${editableCell(b.bitter,'bitter',i,'number')}
+    ${editableCell(b.smell,'smell',i,'number')}
+    ${editableCell(b.mouth,'mouth',i,'number')}
+    ${editableCell(b.suit,'suit',i,'number')}
+    ${editableCell(b.dec,'dec',i,'text',['Retest','Winner','Skip'])}
+    ${editableCell(b.notes,'notes',i)}
+    <td><button class="btn-danger" onclick="deleteBase(${i})">מחק</button></td>
+  </tr>`).join('');
+}
+
+function deleteFlavor(idx){
+  const rec = DB.flavor[idx];
+  if(!rec) return;
+  if(confirm('למחוק את ניסוי הטעם '+rec.id+'?')){
+    DB.flavor.splice(idx,1);
+    // אם יש טעימות שמבוססות על הדגימה שנמחקה, משאירים אותן אבל מסמנים בהערה
+    DB.tasting.forEach(t=>{ if(t.sample===rec.id) t.comments = ((t.comments||'') + ' | שים לב: ניסוי טעם '+rec.id+' נמחק.').trim(); });
+    selectedCompare.delete(rec.id);
+    persistDB();
+    renderFlavorTable();
+    renderDashboard();
+    populateSampleSelect();
+  }
+}
+
+function renderFlavorTable(){
+  const t=g('flavor-table');
+  if(!DB.flavor.length){t.innerHTML='<tr><td class="empty">אין רשומות</td></tr>';return;}
+  t.innerHTML=`<tr>${['מזהה','בסיס','משפחה','קרב','ליים','לימון','רעננות','חומציות','כולל','קנייה','החלטה','פעולות'].map(h=>`<th>${h}</th>`).join('')}</tr>`+
+  DB.flavor.map((f,i)=>`<tr>
+    <td class="id-cell">${f.id}</td><td class="ltr-value">${f.base}</td><td>${f.family}</td>
+    <td class="ltr-value">${f.carb==='Sparkling'?'🫧 Sparkling':'💧 Still'}</td>
+    <td>${f.lime||0}g</td><td>${f.lemon||0}g</td>
+    <td>${f.fresh||'—'}</td><td>${f.acid||'—'}</td><td>${f.overall||'—'}</td>
+    <td class="ltr-value">${f.buy||'—'}</td><td class="ltr-value">${badge(f.dec)}</td>
+    <td><button class="btn-danger" onclick="deleteFlavor(${i})">מחק</button></td>
+  </tr>`).join('');
+}
+
+function renderTastingTable(){
+  const t=g('tasting-table');
+  if(!DB.tasting.length){t.innerHTML='<tr><td colspan="8" class="empty">אין טעימות עדיין</td></tr>';return;}
+  t.innerHTML=`<tr>${['טועם','דגימה','תגובה ראשונה','% שסיים','טעם','תחושת פה','קנייה','מחיר ₪'].map(h=>`<th>${h}</th>`).join('')}</tr>`+
+  DB.tasting.map(t=>`<tr>
+    <td class="id-cell">${t.name}</td><td>${t.sample}</td><td>${t.react||'—'}</td>
+    <td>${t.finish||'—'}${t.finish?'%':''}</td><td>${t.taste||'—'}</td>
+    <td>${t.mouth||'—'}</td><td>${t.buy||'—'}</td><td>${t.price||'—'}</td>
+  </tr>`).join('');
+}
+
+function populateBaseSelect(){
+  g('f-base').innerHTML=DB.base.map(b=>`<option value="${b.id}">${b.id}</option>`).join('');
+}
+function populateSampleSelect(){
+  g('t-sample').innerHTML=DB.flavor.map(f=>`<option value="${f.id}">${f.id} — ${f.family}</option>`).join('');
+}
+
+function showSuccess(id){
+  const el=g(id);el.style.display='block';
+  setTimeout(()=>el.style.display='none',2500);
+}
+
+function saveBase(){
+  DB.base.push({id:v('b-id')||'B'+(DB.base.length+1),op:v('b-op'),date:v('b-date'),method:v('b-method'),filter:v('b-filter'),blend:n('b-blend'),aloe:n('b-aloe'),water:n('b-water'),soak:n('b-soak'),soaktime:n('b-soaktime'),final:n('b-final'),cloth:n('b-cloth'),clarity:n('b-clarity'),slim:n('b-slim'),bitter:n('b-bitter'),smell:n('b-smell'),mouth:n('b-mouth'),suit:n('b-suit'),dec:v('b-dec'),notes:v('b-notes')});
+  persistDB();showSuccess('base-success');clearBase();renderBaseTable();renderDashboard();populateBaseSelect();
+}
+function clearBase(){['b-id','b-op','b-date','b-blend','b-aloe','b-water','b-soak','b-soaktime','b-final','b-cloth','b-clarity','b-slim','b-bitter','b-smell','b-mouth','b-suit','b-notes'].forEach(id=>{if(g(id))g(id).value='';});}
+
+function saveFlavor(){
+  DB.flavor.push({id:v('f-id')||'S'+(DB.flavor.length+1),base:v('f-base'),date:v('f-date'),family:v('f-family'),carb:v('f-carb'),tastedNow:v('f-tasted-now'),baseG:n('f-base-g'),soda:n('f-soda'),lime:n('f-lime'),lemon:n('f-lemon'),salt:n('f-salt'),mint:n('f-mint'),basil:n('f-basil'),cuke:n('f-cuke'),calen:n('f-calen'),other:v('f-other'),fresh:n('f-fresh'),acid:n('f-acid'),slim:n('f-slim'),bitter:n('f-bitter'),overall:n('f-overall'),buy:v('f-buy'),dec:v('f-dec'),notes:v('f-notes')});
+  persistDB();showSuccess('flavor-success');clearFlavor();renderFlavorTable();renderDashboard();populateSampleSelect();
+}
+function clearFlavor(){['f-id','f-date','f-family','f-base-g','f-soda','f-lime','f-lemon','f-salt','f-mint','f-basil','f-cuke','f-calen','f-other','f-fresh','f-acid','f-slim','f-bitter','f-overall','f-notes'].forEach(id=>{if(g(id))g(id).value='';});}
+
+function saveTasting(){
+  DB.tasting.push({name:v('t-name'),sample:v('t-sample'),date:v('t-date'),ctx:v('t-ctx'),react:v('t-react'),finish:n('t-finish'),fresh:n('t-fresh'),taste:n('t-taste'),mouth:n('t-mouth'),buy:v('t-buy'),price:n('t-price'),comments:v('t-comments')});
+  persistDB();showSuccess('tasting-success');clearTasting();renderTastingTable();renderDashboard();
+}
+function clearTasting(){['t-name','t-date','t-ctx','t-react','t-finish','t-fresh','t-taste','t-mouth','t-price','t-comments'].forEach(id=>{if(g(id))g(id).value='';});}
+
+let selectedCompare=new Set();
+function renderCompare(){
+  const all=[...DB.base.map(b=>({...b,_type:'base'})),...DB.flavor.map(f=>({...f,_type:'flavor'}))];
+  g('compare-selector').innerHTML=all.map(s=>`<button class="compare-btn${selectedCompare.has(s.id)?' selected':''}" onclick="toggleCompare('${s.id}')">${s.id}</button>`).join('');
+  const grid=g('compare-grid');
+  if(!selectedCompare.size){grid.innerHTML='<div class="empty">בחר דגימות למעלה</div>';return;}
+  grid.innerHTML=[...selectedCompare].map(id=>{
+    const s=all.find(x=>x.id===id);if(!s)return '';
+    const scores=s._type==='base'?[['בהירות',s.clarity],['ריריות',s.slim],['מרירות',s.bitter],['ריח',s.smell],['תחושת פה',s.mouth],['התאמה',s.suit]]:
+      [['רעננות',s.fresh],['חומציות',s.acid],['ריריות',s.slim],['מרירות',s.bitter],['כולל',s.overall]];
+    return `<div class="compare-card">
+      <div class="compare-id">${s.id}</div>
+      <div class="compare-sub">${s._type==='base'?s.method:s.family}</div>
+      ${scores.map(([l,val])=>`<div class="bar-row">
+        <span class="bar-label">${l}</span>
+        <div class="bar-track"><div class="bar-fill" style="width:${val?val*10:0}%"></div></div>
+        <span class="bar-val">${val||'—'}</span>
+      </div>`).join('')}
+      <div style="margin-top:12px">${badge(s.dec)}</div>
+    </div>`;
+  }).join('');
+}
+function toggleCompare(id){
+  if(selectedCompare.has(id))selectedCompare.delete(id);
+  else if(selectedCompare.size<4)selectedCompare.add(id);
+  renderCompare();
+}
+
+function exportToExcel(){
+  const wb=XLSX.utils.book_new();
+  // Dashboard
+  const dashData=[
+    ['מדד','תוצאה'],
+    ['סה״כ ניסויי בסיס',DB.base.length],
+    ['סה״כ ניסויי טעם',DB.flavor.length],
+    ['סה״כ טעימות',DB.tasting.length],
+    ['Winners',DB.base.filter(b=>b.dec==='Winner').length+DB.flavor.filter(f=>f.dec==='Winner').length]
+  ];
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(dashData),'Dashboard');
+  // Base
+  const baseHeaders=['Base ID','Date','Operator','Method','Filter','Blend Time (sec)','Aloe Gel Start (g)','Water Start (g)','Soak Rounds','Total Soak Time (min)','Final Liquid (g)','Aloe Left in Cloth (g)','Clarity 1-10','Sliminess 1-10','Bitterness 1-10','Green/Oxidized Smell 1-10','Clean Mouthfeel 1-10','Base Suitability 1-10','Decision','Notes'];
+  const baseRows=DB.base.map(b=>[b.id,b.date,b.op,b.method,b.filter,b.blend,b.aloe,b.water,b.soak,b.soaktime,b.final,b.cloth,b.clarity,b.slim,b.bitter,b.smell,b.mouth,b.suit,b.dec,b.notes]);
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([baseHeaders,...baseRows]),'Base Extraction Log');
+  // Flavor
+  const flavorHeaders=['Sample ID','Date','Base ID','Flavor Family','Carbonation','Tasted Immediately?','Base Liquid (g)','Soda/Water Added (g)','Lime (g)','Lemon (g)','Salt (g)','Mint Infusion (g)','Basil Infusion (g)','Cucumber Water (g)','Calendula Infusion (g)','Other Ingredients','Freshness 1-10','Acidity Balance 1-10','Sliminess 1-10','Bitterness 1-10','Overall 1-10','Would Buy?','Decision','Notes'];
+  const flavorRows=DB.flavor.map(f=>[f.id,f.date,f.base,f.family,f.carb,f.tastedNow,f.baseG,f.soda,f.lime,f.lemon,f.salt,f.mint,f.basil,f.cuke,f.calen,f.other,f.fresh,f.acid,f.slim,f.bitter,f.overall,f.buy,f.dec,f.notes]);
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([flavorHeaders,...flavorRows]),'Flavor Trials');
+  // Tasting
+  const tastingHeaders=['Taster','Date','Sample ID','Context','First Reaction','Finish Amount %','Freshness 1-10','Taste 1-10','Mouthfeel 1-10','Would Buy?','Price Willingness ₪','Comments'];
+  const tastingRows=DB.tasting.map(t=>[t.name,t.date,t.sample,t.ctx,t.react,t.finish,t.fresh,t.taste,t.mouth,t.buy,t.price,t.comments]);
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([tastingHeaders,...tastingRows]),'Tasting Panel');
+  XLSX.writeFile(wb,'aloe_experiment_system.xlsx');
+}
+
+const STORAGE_KEY='aloe_tracker_v1';
+const DEFAULT_DB={
+  base:[
+    {id:'B1',op:'Itamar',date:'',method:'Short blend',filter:'Cheesecloth',blend:5,aloe:30,water:240,soak:'',soaktime:'',final:250,cloth:6,clarity:'',slim:'',bitter:'',smell:'',mouth:'',suit:'',dec:'Retest',notes:'Need compare taste vs B2. Estimated final aloe % uses 6g left in cloth.'},
+    {id:'B2',op:'Itamar',date:'',method:'Short blend',filter:'Cheesecloth',blend:10,aloe:30,water:240,soak:'',soaktime:'',final:255,cloth:'',clarity:'',slim:'',bitter:'',smell:'',mouth:'',suit:'',dec:'Retest',notes:'Aloe left in cloth not measured yet.'}
+  ],
+  flavor:[
+    {id:'S1',base:'B1',date:'',family:'Lemon sparkling',carb:'Sparkling',tastedNow:'Yes',baseG:100,soda:90,lime:0,lemon:10,salt:0,mint:0,basil:0,cuke:0,calen:0,other:'',fresh:'',acid:'',slim:'',bitter:'',overall:'',buy:'',dec:'Retest',notes:'Day after: carbonation mostly gone; lemon too dominant at 10g / 200g (5%). Next test 4g, 6g, 8g lemon/lime.'},
+    {id:'S1-A',base:'B1',date:'',family:'Lime/Lemon ladder',carb:'Sparkling',tastedNow:'',baseG:100,soda:96,lime:4,lemon:0,salt:0,mint:0,basil:0,cuke:0,calen:0,other:'',fresh:'',acid:'',slim:'',bitter:'',overall:'',buy:'',dec:'Retest',notes:'Lower acid: 4g lime/lemon per 200g'},
+    {id:'S1-B',base:'B1',date:'',family:'Lime/Lemon ladder',carb:'Sparkling',tastedNow:'',baseG:100,soda:94,lime:6,lemon:0,salt:0,mint:0,basil:0,cuke:0,calen:0,other:'',fresh:'',acid:'',slim:'',bitter:'',overall:'',buy:'',dec:'Retest',notes:'Medium acid: 6g lime/lemon per 200g'},
+    {id:'S1-C',base:'B1',date:'',family:'Lime/Lemon ladder',carb:'Sparkling',tastedNow:'',baseG:100,soda:92,lime:8,lemon:0,salt:0,mint:0,basil:0,cuke:0,calen:0,other:'',fresh:'',acid:'',slim:'',bitter:'',overall:'',buy:'',dec:'Retest',notes:'Stronger acid: 8g lime/lemon per 200g'}
+  ],
+  tasting:[]
+};
+
+function persistDB(){
+  try{
+    localStorage.setItem(STORAGE_KEY,JSON.stringify(DB));
+    const ind=g('save-indicator');const txt=g('save-text');
+    ind.classList.add('saved');
+    const now=new Date();
+    txt.textContent='נשמר ב-'+now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
+    clearTimeout(persistDB._t);
+    persistDB._t=setTimeout(()=>{ind.classList.remove('saved');txt.textContent='נשמר אוטומטית';},3000);
+  }catch(e){console.warn('localStorage error',e);}
+}
+
+function loadDB(){
+  try{
+    const raw=localStorage.getItem(STORAGE_KEY);
+    if(raw){
+      const parsed=JSON.parse(raw);
+      DB.base=parsed.base||DEFAULT_DB.base;
+      DB.flavor=parsed.flavor||DEFAULT_DB.flavor;
+      DB.tasting=parsed.tasting||[];
+      g('save-text').textContent='נשמר אוטומטית';
+    } else {
+      DB.base=DEFAULT_DB.base.map(x=>({...x}));
+      DB.flavor=DEFAULT_DB.flavor.map(x=>({...x}));
+      DB.tasting=[];
+      g('save-text').textContent='נתונים ראשוניים';
+    }
+  }catch(e){
+    DB.base=DEFAULT_DB.base.map(x=>({...x}));
+    DB.flavor=DEFAULT_DB.flavor.map(x=>({...x}));
+    DB.tasting=[];
+  }
+}
+
+function confirmReset(){
+  if(confirm('למחוק את כל הנתונים ולהתחיל מחדש?\n\nהנתונים המקוריים (B1,B2,S1–S1-C) יוחזרו.')){
+    localStorage.removeItem(STORAGE_KEY);
+    DB.base=DEFAULT_DB.base.map(x=>({...x}));
+    DB.flavor=DEFAULT_DB.flavor.map(x=>({...x}));
+    DB.tasting=[];
+    g('save-text').textContent='אופס — נוקה';
+    renderDashboard();renderBaseTable();renderFlavorTable();renderTastingTable();
+  }
+}
+
+// init
+loadDB();
+persistDB._t = null;
+renderDashboard();
+renderBaseTable();
+g('b-date').value=new Date().toISOString().split('T')[0];
+g('f-date').value=new Date().toISOString().split('T')[0];
+g('t-date').value=new Date().toISOString().split('T')[0];
+populateBaseSelect();
+</script>
+</body>
+</html>
