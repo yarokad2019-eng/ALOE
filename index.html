@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🌿 מעקב ניסויים — אלוורה</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --green-50: #E8F5EE;
+  --green-100: #C6E8D4;
+  --green-400: #3DAA6E;
+  --green-600: #1F7A4A;
+  --green-800: #0F4028;
+  --amber-50: #FEF6E4;
+  --amber-400: #E8A020;
+  --amber-600: #A56B0A;
+  --red-50: #FEF0EE;
+  --red-400: #E05A4A;
+  --red-600: #A83428;
+  --blue-50: #EEF4FE;
+  --blue-400: #4A8AE0;
+  --blue-600: #2355A8;
+  --gray-50: #F7F6F3;
+  --gray-100: #EDECE8;
+  --gray-200: #DEDCD6;
+  --gray-400: #9A9890;
+  --gray-600: #5C5A54;
+  --gray-800: #2E2C28;
+  --bg: #F5F4F0;
+  --surface: #FFFFFF;
+  --border: #E0DED8;
+  --text: #1E1C18;
+  --text-muted: #6A6860;
+  --radius: 10px;
+  --radius-lg: 14px;
+  --shadow: 0 1px 4px rgba(0,0,0,0.06), 0 0 0 0.5px rgba(0,0,0,0.06);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Heebo', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 15px;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+/* HEADER */
+.header {
+  background: var(--green-800);
+  color: #fff;
+  padding: 18px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.header h1 { font-size: 20px; font-weight: 600; display: flex; align-items: center; gap: 10px; }
+.header h1 span { opacity: 0.7; font-weight: 300; font-size: 14px; }
+.header-actions { display: flex; gap: 8px; }
+
+/* TABS */
+.tabs {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  overflow-x: auto;
+  padding: 0 16px;
+}
+.tab {
+  padding: 14px 20px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-family: 'Heebo', sans-serif;
+  font-size: 14px;
+  color: var(--text-muted);
+  border-bottom: 2px solid transparent;
+  white-space: nowrap;
+  transition: all .15s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.tab:hover { color: var(--text); }
+.tab.active { color: var(--green-600); border-bottom-color: var(--green-600); font-weight: 500; }
+
+/* LAYOUT */
+.content { max-width: 860px; margin: 0 auto; padding: 24px 16px; }
+.pane { display: none; }
+.pane.active { display: block; }
+
+/* CARDS */
+.card {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  padding: 20px;
+  margin-bottom: 16px;
+}
+.card-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 18px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.card-title .icon {
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  background: var(--green-50);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+}
+
+/* FORM */
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+@media (max-width: 600px) { .grid2, .grid3 { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 400px) { .grid2, .grid3 { grid-template-columns: 1fr; } }
+
+.field { display: flex; flex-direction: column; gap: 5px; }
+.field label { font-size: 12px; font-weight: 500; color: var(--text-muted); text-transform: uppercase; letter-spacing: .03em; }
+.field input,
+.field select,
+.field textarea {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--gray-50);
+  color: var(--text);
+  font-family: 'Heebo', sans-serif;
+  font-size: 14px;
+  transition: border-color .15s, background .15s;
+}
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+  outline: none;
+  border-color: var(--green-400);
+  background: #fff;
+}
+.field textarea { resize: vertical; min-height: 72px; }
+
+/* DIVIDER */
+.divider { height: 1px; background: var(--border); margin: 20px 0; }
+
+/* SCORE SLIDERS */
+.scores-section { margin-top: 4px; }
+.score-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--gray-100);
+}
+.score-row:last-child { border-bottom: none; }
+.score-label { font-size: 13px; color: var(--text-muted); width: 170px; flex-shrink: 0; }
+.score-row input[type=range] {
+  flex: 1;
+  -webkit-appearance: none;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--gray-200);
+  border: none;
+  padding: 0;
+}
+.score-row input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: var(--green-600);
+  cursor: pointer;
+  border: 2px solid #fff;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+}
+.score-val {
+  width: 28px;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--green-600);
+}
+
+/* BUTTONS */
+.btn {
+  padding: 9px 18px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-family: 'Heebo', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all .15s;
+}
+.btn:hover { background: var(--gray-100); }
+.btn-primary { background: var(--green-600); color: #fff; border-color: var(--green-600); }
+.btn-primary:hover { background: var(--green-800); border-color: var(--green-800); }
+.btn-sm { padding: 5px 12px; font-size: 12px; }
+.btn-danger { color: var(--red-600); border-color: #F5C4C0; }
+.btn-danger:hover { background: var(--red-50); }
+.form-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+/* BADGES */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+.badge-winner { background: var(--green-50); color: var(--green-600); }
+.badge-retest { background: var(--amber-50); color: var(--amber-600); }
+.badge-skip { background: var(--red-50); color: var(--red-600); }
+
+/* RECORD CARDS */
+.record-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  margin-bottom: 10px;
+  transition: box-shadow .15s;
+}
+.record-card:hover { box-shadow: var(--shadow); }
+.record-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.record-id { font-size: 16px; font-weight: 600; }
+.record-meta { font-size: 12px; color: var(--text-muted); margin-bottom: 8px; }
+.record-scores { display: flex; gap: 14px; flex-wrap: wrap; font-size: 13px; }
+.record-scores span strong { color: var(--green-600); }
+.record-notes {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--gray-100);
+  font-style: italic;
+}
+.tags { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px; }
+.tag {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 12px;
+  background: var(--gray-100);
+  color: var(--gray-600);
+}
+
+/* EMPTY STATE */
+.empty {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-muted);
+  border: 1.5px dashed var(--border);
+  border-radius: var(--radius-lg);
+}
+.empty .empty-icon { font-size: 32px; margin-bottom: 10px; }
+.empty p { font-size: 14px; }
+
+/* STAT GRID */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.stat-card {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  box-shadow: var(--shadow);
+  text-align: center;
+}
+.stat-num { font-size: 32px; font-weight: 600; color: var(--green-600); }
+.stat-label { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+
+/* AVATAR */
+.avatar {
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  background: var(--green-50);
+  color: var(--green-600);
+  font-weight: 600;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* COMPARE */
+.compare-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 14px;
+  margin-top: 16px;
+}
+.compare-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 14px;
+}
+.compare-card.winner-card { border-color: var(--green-400); }
+.compare-card h3 { font-size: 15px; margin-bottom: 10px; }
+.compare-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px 0;
+  font-size: 13px;
+  border-bottom: 1px solid var(--gray-100);
+}
+.compare-row:last-child { border-bottom: none; }
+.compare-row .lbl { color: var(--text-muted); }
+.score-bar-wrap { display: flex; align-items: center; gap: 6px; }
+.score-bar { width: 60px; height: 6px; background: var(--gray-100); border-radius: 3px; overflow: hidden; }
+.score-bar-fill { height: 100%; background: var(--green-400); border-radius: 3px; }
+
+
+/* EDIT BANNER */
+.edit-banner {
+  background: var(--amber-50);
+  border: 1px solid var(--amber-400);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  font-size: 13px;
+  color: var(--amber-600);
+  font-weight: 500;
+  margin-bottom: 14px;
+  display: none;
+  align-items: center;
+  gap: 8px;
+}
+.edit-banner.show { display: flex; }
+/* score hint */
+.score-hint { font-size: 11px; color: var(--text-muted); display: flex; justify-content: space-between; margin-top: 2px; padding: 0 2px; }
+
+/* TOAST */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(100px);
+  background: var(--green-800);
+  color: #fff;
+  padding: 12px 24px;
+  border-radius: 24px;
+  font-size: 14px;
+  font-weight: 500;
+  z-index: 9999;
+  transition: transform .3s cubic-bezier(.175,.885,.32,1.275);
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+
+/* LIST HEADER */
+.list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.list-count { font-size: 13px; color: var(--text-muted); }
+
+/* SECTION SUBTITLE */
+.section-sub {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  margin: 18px 0 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.section-sub::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+/* ACTIVITY */
+.activity-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--gray-100);
+  font-size: 14px;
+}
+.activity-item:last-child { border-bottom: none; }
+.activity-icon {
+  width: 34px; height: 34px;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+.ai-base { background: var(--green-50); }
+.ai-flavor { background: var(--blue-50); }
+.ai-panel { background: var(--amber-50); }
+.activity-text { flex: 1; }
+.activity-date { font-size: 12px; color: var(--text-muted); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🌿 מעקב ניסויים אלוורה <span>| מערכת מחקר ופיתוח משקה</span></h1>
+  <div class="header-actions">
+    <button class="btn btn-sm" onclick="exportCSV()" style="background:rgba(255,255,255,0.15);border-color:rgba(255,255,255,0.3);color:#fff">⬇ ייצוא CSV</button>
+    <button class="btn btn-sm btn-danger" style="background:rgba(255,50,50,0.15);border-color:rgba(255,100,100,0.3);color:#ffa0a0" onclick="confirmReset()">איפוס</button>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="showTab('dash',this)">📊 דאשבורד</button>
+  <button class="tab" onclick="showTab('base',this)">💧 בסיס אלוורה</button>
+  <button class="tab" onclick="showTab('flavor',this)">🍋 ניסויי טעם</button>
+  <button class="tab" onclick="showTab('panel',this)">👥 פאנל טעימות</button>
+  <button class="tab" onclick="showTab('compare',this)">📈 השוואה</button>
+</div>
+
+<!-- ===== DASHBOARD ===== -->
+<div id="pane-dash" class="pane active">
+<div class="content">
+  <div class="stat-grid" id="dash-stats">
+    <div class="stat-card"><div class="stat-num" id="d-base">0</div><div class="stat-label">רשומות בסיס</div></div>
+    <div class="stat-card"><div class="stat-num" id="d-flavor">0</div><div class="stat-label">ניסויי טעם</div></div>
+    <div class="stat-card"><div class="stat-num" id="d-panel">0</div><div class="stat-label">טועמים</div></div>
+    <div class="stat-card"><div class="stat-num" id="d-winners">0</div><div class="stat-label">🏆 זוכים</div></div>
+  </div>
+  <div class="card">
+    <div class="card-title"><div class="icon">📋</div> פעילות אחרונה</div>
+    <div id="dash-activity"></div>
+  </div>
+</div>
+</div>
+
+<!-- ===== BASE ===== -->
+<div id="pane-base" class="pane">
+<div class="content">
+  <div class="card">
+    <div id="b-edit-banner" class="edit-banner">✏️ <span>מצב עריכה — <span id="b-edit-id-label"></span></span> <button class="btn btn-sm" style="margin-right:auto" onclick="cancelEditBase()">ביטול עריכה</button></div>
+    <div class="card-title" id="b-form-title"><div class="icon">💧</div> רשומת בסיס חדשה</div>
+    <div class="grid2">
+      <div class="field"><label>מזהה</label><input id="b-id" placeholder="B1, B2..."></div>
+      <div class="field"><label>מפעיל</label><input id="b-op" placeholder="שם המפעיל"></div>
+      <div class="field"><label>תאריך</label><input type="date" id="b-date"></div>
+      <div class="field"><label>שיטה</label>
+        <select id="b-method"><option value="">— בחר שיטה —</option><option>Short blend</option><option>Long blend</option><option>Cold press</option><option>אחר</option></select>
+      </div>
+      <div class="field"><label>פילטר</label>
+        <select id="b-filter"><option value="">— בחר פילטר —</option><option>Cheesecloth</option><option>Fine mesh</option><option>אחר</option></select>
+      </div>
+      <div class="field"><label>זמן בלנד (שניות)</label><input type="number" id="b-blend" placeholder="60" min="0"></div>
+    </div>
+
+    <div class="section-sub">כמויות</div>
+    <div class="grid3">
+      <div class="field"><label>ג'ל אלוורה (גרם)</label><input type="number" id="b-gel" placeholder="0" min="0"></div>
+      <div class="field"><label>מים (גרם)</label><input type="number" id="b-water" placeholder="0" min="0"></div>
+      <div class="field"><label>נוזל סופי (גרם)</label><input type="number" id="b-final" placeholder="0" min="0"></div>
+      <div class="field"><label>שאריות בבד (גרם)</label><input type="number" id="b-leftover" placeholder="0" min="0"></div>
+      <div class="field"><label>סיבובי השרייה</label><input type="number" id="b-soakc" placeholder="0" min="0"></div>
+      <div class="field"><label>זמן השרייה — שעות</label><input type="number" id="b-soakt-h" placeholder="0" min="0"></div>
+      <div class="field"><label>זמן השרייה — ימים</label><input type="number" id="b-soakt-d" placeholder="0" min="0" step="0.5"></div>
+    </div>
+
+    <div class="section-sub">ציונים (1–10)</div>
+    <div class="scores-section">
+    <div class="score-hint"><span>1 — גרוע</span><span>10 — מצוין ✨</span></div>
+      <div class="score-row"><span class="score-label">בהירות</span><input type="range" min="1" max="10" value="5" step="1" id="bs-clarity" oninput="sv('bsv-clarity',this.value)"><span class="score-val" id="bsv-clarity">5</span></div>
+      <div class="score-row"><span class="score-label">ריריות</span><input type="range" min="1" max="10" value="5" step="1" id="bs-slime" oninput="sv('bsv-slime',this.value)"><span class="score-val" id="bsv-slime">5</span></div>
+      <div class="score-row"><span class="score-label">מרירות</span><input type="range" min="1" max="10" value="5" step="1" id="bs-bitter" oninput="sv('bsv-bitter',this.value)"><span class="score-val" id="bsv-bitter">5</span></div>
+      <div class="score-row"><span class="score-label">ריח ירוק / חמצון</span><input type="range" min="1" max="10" value="5" step="1" id="bs-smell" oninput="sv('bsv-smell',this.value)"><span class="score-val" id="bsv-smell">5</span></div>
+      <div class="score-row"><span class="score-label">תחושת פה נקייה</span><input type="range" min="1" max="10" value="5" step="1" id="bs-mouth" oninput="sv('bsv-mouth',this.value)"><span class="score-val" id="bsv-mouth">5</span></div>
+      <div class="score-row"><span class="score-label">התאמה לבסיס</span><input type="range" min="1" max="10" value="5" step="1" id="bs-fit" oninput="sv('bsv-fit',this.value)"><span class="score-val" id="bsv-fit">5</span></div>
+    </div>
+
+    <div class="section-sub">החלטה והערות</div>
+    <div class="grid2">
+      <div class="field"><label>החלטה</label>
+        <select id="b-decision"><option value="">— בחר —</option><option>Winner</option><option>Retest</option><option>Skip</option></select>
+      </div>
+      <div class="field"><label>הערות</label><textarea id="b-notes" placeholder="הערות חופשיות..."></textarea></div>
+    </div>
+
+    <div class="form-actions">
+      <button class="btn" onclick="clearForm('base')">נקה טופס</button>
+      <button class="btn btn-primary" id="b-save-btn" onclick="saveBase()">💾 שמור רשומה</button>
+    </div>
+  </div>
+
+  <div id="base-list-section">
+    <div class="list-header">
+      <h2 style="font-size:16px;font-weight:600">כל רשומות הבסיס</h2>
+      <span class="list-count" id="base-count"></span>
+    </div>
+    <div id="base-list"></div>
+  </div>
+</div>
+</div>
+
+<!-- ===== FLAVOR ===== -->
+<div id="pane-flavor" class="pane">
+<div class="content">
+  <div class="card">
+    <div class="card-title"><div class="icon">🍋</div> ניסוי טעם חדש</div>
+    <div class="grid2">
+      <div class="field"><label>מזהה</label><input id="f-id" placeholder="S1, S2..."></div>
+      <div class="field"><label>בסיס</label><input id="f-base" placeholder="B1, B2..."></div>
+      <div class="field"><label>תאריך</label><input type="date" id="f-date"></div>
+      <div class="field"><label>משפחת טעם</label><input id="f-family" placeholder="הדרים, ירוק, פרחוני..."></div>
+      <div class="field"><label>קרבונציה</label>
+        <select id="f-carb"><option>Sparkling</option><option>Still</option></select>
+      </div>
+      <div class="field"><label>טעימה מיידית?</label>
+        <select id="f-imm"><option value="">—</option><option>Yes</option><option>No</option></select>
+      </div>
+    </div>
+
+    <div class="section-sub">כמויות (גרם)</div>
+    <div class="grid3">
+      <div class="field"><label>נוזל בסיס</label><input type="number" id="f-liquid" placeholder="0" min="0"></div>
+      <div class="field"><label>סודה / מים</label><input type="number" id="f-soda" placeholder="0" min="0"></div>
+      <div class="field"><label>ליים</label><input type="number" id="f-lime" placeholder="0" min="0"></div>
+      <div class="field"><label>לימון</label><input type="number" id="f-lemon" placeholder="0" min="0"></div>
+      <div class="field"><label>מלח</label><input type="number" id="f-salt" placeholder="0" min="0"></div>
+      <div class="field"><label>נענע</label><input type="number" id="f-mint" placeholder="0" min="0"></div>
+      <div class="field"><label>בזיליקום</label><input type="number" id="f-basil" placeholder="0" min="0"></div>
+      <div class="field"><label>מלפפון</label><input type="number" id="f-cuke" placeholder="0" min="0"></div>
+      <div class="field"><label>קלנדולה</label><input type="number" id="f-calen" placeholder="0" min="0"></div>
+    </div>
+    <div class="field" style="margin-top:10px"><label>רכיבים נוספים</label><input id="f-extra" placeholder="רכיב, כמות..."></div>
+
+    <div class="section-sub">ציונים (1–10)</div>
+    <div class="scores-section">
+    <div class="score-hint"><span>1 — גרוע</span><span>10 — מצוין ✨</span></div>
+      <div class="score-row"><span class="score-label">רעננות</span><input type="range" min="1" max="10" value="5" step="1" id="fs-fresh" oninput="sv('fsv-fresh',this.value)"><span class="score-val" id="fsv-fresh">5</span></div>
+      <div class="score-row"><span class="score-label">איזון חומציות</span><input type="range" min="1" max="10" value="5" step="1" id="fs-acid" oninput="sv('fsv-acid',this.value)"><span class="score-val" id="fsv-acid">5</span></div>
+      <div class="score-row"><span class="score-label">ריריות</span><input type="range" min="1" max="10" value="5" step="1" id="fs-slime" oninput="sv('fsv-slime',this.value)"><span class="score-val" id="fsv-slime">5</span></div>
+      <div class="score-row"><span class="score-label">מרירות</span><input type="range" min="1" max="10" value="5" step="1" id="fs-bitter" oninput="sv('fsv-bitter',this.value)"><span class="score-val" id="fsv-bitter">5</span></div>
+      <div class="score-row"><span class="score-label">ציון כולל</span><input type="range" min="1" max="10" value="5" step="1" id="fs-total" oninput="sv('fsv-total',this.value)"><span class="score-val" id="fsv-total">5</span></div>
+    </div>
+
+    <div class="section-sub">החלטה והערות</div>
+    <div class="grid2">
+      <div class="field"><label>היית קונה?</label>
+        <select id="f-buy"><option value="">—</option><option>Yes</option><option>No</option><option>Maybe</option></select>
+      </div>
+      <div class="field"><label>החלטה</label>
+        <select id="f-decision"><option value="">—</option><option>Winner</option><option>Retest</option><option>Skip</option></select>
+      </div>
+    </div>
+    <div class="field" style="margin-top:10px"><label>הערות</label><textarea id="f-notes" placeholder="הערות חופשיות..."></textarea></div>
+
+    <div class="form-actions">
+      <button class="btn" onclick="clearForm('flavor')">נקה טופס</button>
+      <button class="btn btn-primary" onclick="saveFlavor()">💾 שמור רשומה</button>
+    </div>
+  </div>
+
+  <div id="flavor-list-section">
+    <div class="list-header">
+      <h2 style="font-size:16px;font-weight:600">כל ניסויי הטעם</h2>
+      <span class="list-count" id="flavor-count"></span>
+    </div>
+    <div id="flavor-list"></div>
+  </div>
+</div>
+</div>
+
+<!-- ===== PANEL ===== -->
+<div id="pane-panel" class="pane">
+<div class="content">
+  <div class="card">
+    <div class="card-title"><div class="icon">👥</div> טעימה חדשה</div>
+    <div class="grid2">
+      <div class="field"><label>שם הטועם</label><input id="p-name" placeholder="שם פרטי"></div>
+      <div class="field"><label>דגימה</label><input id="p-sample" placeholder="S1, B2..."></div>
+      <div class="field"><label>תאריך</label><input type="date" id="p-date"></div>
+      <div class="field"><label>הקשר</label><input id="p-context" placeholder="עיוור / עם רקע..."></div>
+    </div>
+    <div class="field" style="margin-top:10px"><label>תגובה ראשונה</label><textarea id="p-reaction" placeholder="מה אמר/ה בדיוק בתגובה הראשונה?"></textarea></div>
+
+    <div class="section-sub">כמות ותמחור</div>
+    <div class="grid2">
+      <div class="field"><label>% מהכוס שסיים/ה</label><input type="number" id="p-pct" placeholder="100" min="0" max="100"></div>
+      <div class="field"><label>מחיר מוכן/ה לשלם (₪)</label><input type="number" id="p-price" placeholder="0" min="0"></div>
+    </div>
+
+    <div class="section-sub">ציונים (1–10)</div>
+    <div class="scores-section">
+    <div class="score-hint"><span>1 — גרוע</span><span>10 — מצוין ✨</span></div>
+      <div class="score-row"><span class="score-label">רעננות</span><input type="range" min="1" max="10" value="5" step="1" id="ps-fresh" oninput="sv('psv-fresh',this.value)"><span class="score-val" id="psv-fresh">5</span></div>
+      <div class="score-row"><span class="score-label">טעם כולל</span><input type="range" min="1" max="10" value="5" step="1" id="ps-taste" oninput="sv('psv-taste',this.value)"><span class="score-val" id="psv-taste">5</span></div>
+      <div class="score-row"><span class="score-label">תחושת פה</span><input type="range" min="1" max="10" value="5" step="1" id="ps-mouth" oninput="sv('psv-mouth',this.value)"><span class="score-val" id="psv-mouth">5</span></div>
+    </div>
+
+    <div class="section-sub">סיכום</div>
+    <div class="grid2">
+      <div class="field"><label>היית קונה?</label>
+        <select id="p-buy"><option value="">—</option><option>Yes</option><option>No</option><option>Maybe</option></select>
+      </div>
+      <div class="field"><label>הערות חופשיות</label><textarea id="p-notes" placeholder="כל מה שאמר/ה..."></textarea></div>
+    </div>
+
+    <div class="form-actions">
+      <button class="btn" onclick="clearForm('panel')">נקה טופס</button>
+      <button class="btn btn-primary" onclick="savePanel()">💾 שמור רשומה</button>
+    </div>
+  </div>
+
+  <div id="panel-list-section">
+    <div class="list-header">
+      <h2 style="font-size:16px;font-weight:600">כל הטעימות</h2>
+      <span class="list-count" id="panel-count"></span>
+    </div>
+    <div id="panel-list"></div>
+  </div>
+</div>
+</div>
+
+<!-- ===== COMPARE ===== -->
+<div id="pane-compare" class="pane">
+<div class="content">
+  <div class="card">
+    <div class="card-title"><div class="icon">📈</div> השוואת דגימות (עד 4)</div>
+    <div class="field">
+      <label>בחר דגימות להשוואה</label>
+      <select id="cmp-select" multiple size="6" style="min-height:110px;background:#fff"></select>
+    </div>
+    <p style="font-size:12px;color:var(--text-muted);margin-top:6px">Ctrl+לחיצה (או Cmd) לבחירת מספר דגימות</p>
+    <div class="form-actions">
+      <button class="btn btn-primary" onclick="runCompare()">📊 השווה</button>
+    </div>
+  </div>
+  <div id="cmp-result"></div>
+</div>
+</div>
+
+<!-- TOAST -->
+<div id="toast" class="toast"></div>
+
+<script>
+// ── DATA ──────────────────────────────────────────
+var db = { base: [], flavor: [], panel: [] };
+try { var s = localStorage.getItem('aloe-db-v2'); if (s) db = JSON.parse(s); } catch(e) {}
+function persist() { try { localStorage.setItem('aloe-db-v2', JSON.stringify(db)); } catch(e) {} }
+
+function today() { return new Date().toISOString().slice(0, 10); }
+document.getElementById('b-date').value = today();
+document.getElementById('f-date').value = today();
+document.getElementById('p-date').value = today();
+
+// ── HELPERS ───────────────────────────────────────
+function sv(id, val) { document.getElementById(id).textContent = val; }
+function g(id) { return document.getElementById(id); }
+function gv(id) { return g(id).value; }
+
+function toast(msg) {
+  var el = g('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(function() { el.classList.remove('show'); }, 2500);
+}
+
+function decisionBadge(d) {
+  if (d === 'Winner') return '<span class="badge badge-winner">🏆 Winner</span>';
+  if (d === 'Retest') return '<span class="badge badge-retest">🔄 Retest</span>';
+  if (d === 'Skip') return '<span class="badge badge-skip">✕ Skip</span>';
+  return '';
+}
+
+function scoreBar(v) {
+  return '<div class="score-bar-wrap"><span style="font-size:13px;font-weight:600;color:var(--green-600);width:18px">' + v + '</span><div class="score-bar"><div class="score-bar-fill" style="width:' + (v * 10) + '%"></div></div></div>';
+}
+
+// ── TAB NAV ───────────────────────────────────────
+function showTab(id, btn) {
+  document.querySelectorAll('.pane').forEach(function(p) { p.classList.remove('active'); });
+  document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
+  g('pane-' + id).classList.add('active');
+  btn.classList.add('active');
+  if (id === 'dash') renderDash();
+  if (id === 'base') renderBaseList();
+  if (id === 'flavor') renderFlavorList();
+  if (id === 'panel') renderPanelList();
+  if (id === 'compare') renderCompareSelect();
+}
+
+// ── CLEAR FORMS ───────────────────────────────────
+function clearForm(type) {
+  if (type === 'base') {
+    ['b-id','b-op','b-blend','b-gel','b-water','b-final','b-leftover','b-soakc','b-soakt-h','b-soakt-d','b-notes'].forEach(function(id) { g(id).value = ''; });
+    g('b-method').value = ''; g('b-filter').value = ''; g('b-decision').value = '';
+    g('b-date').value = today();
+    ['clarity','slime','bitter','smell','mouth','fit'].forEach(function(k) { g('bs-'+k).value=5; sv('bsv-'+k,5); });
+  }
+  if (type === 'flavor') {
+    ['f-id','f-base','f-family','f-extra','f-notes','f-liquid','f-soda','f-lime','f-lemon','f-salt','f-mint','f-basil','f-cuke','f-calen'].forEach(function(id) { g(id).value = ''; });
+    g('f-imm').value=''; g('f-buy').value=''; g('f-decision').value='';
+    g('f-date').value = today();
+    ['fresh','acid','slime','bitter','total'].forEach(function(k) { g('fs-'+k).value=5; sv('fsv-'+k,5); });
+  }
+  if (type === 'panel') {
+    ['p-name','p-sample','p-context','p-reaction','p-pct','p-price','p-notes'].forEach(function(id) { g(id).value = ''; });
+    g('p-buy').value = '';
+    g('p-date').value = today();
+    ['fresh','taste','mouth'].forEach(function(k) { g('ps-'+k).value=5; sv('psv-'+k,5); });
+  }
+}
+
+// ── SAVE BASE ─────────────────────────────────────
+var editingBaseTs = null;
+
+function saveBase() {
+  if (!gv('b-id').trim()) { toast('נא להזין מזהה'); return; }
+  var soaktH = parseFloat(gv('b-soakt-h')) || 0;
+  var soaktD = parseFloat(gv('b-soakt-d')) || 0;
+  var soaktDisplay = [];
+  if (soaktD > 0) soaktDisplay.push(soaktD + ' ימים');
+  if (soaktH > 0) soaktDisplay.push(soaktH + ' שעות');
+  var r = {
+    id: gv('b-id').trim(), op: gv('b-op'), date: gv('b-date'),
+    method: gv('b-method'), filter: gv('b-filter'), blend: gv('b-blend'),
+    gel: gv('b-gel'), water: gv('b-water'), final: gv('b-final'),
+    leftover: gv('b-leftover'), soakc: gv('b-soakc'),
+    soakt_h: soaktH, soakt_d: soaktD, soakt_display: soaktDisplay.join(' + '),
+    scores: { clarity: +gv('bs-clarity'), slime: +gv('bs-slime'), bitter: +gv('bs-bitter'), smell: +gv('bs-smell'), mouth: +gv('bs-mouth'), fit: +gv('bs-fit') },
+    decision: gv('b-decision'), notes: gv('b-notes')
+  };
+  if (editingBaseTs !== null) {
+    // UPDATE existing
+    var idx = db.base.findIndex(function(x) { return x.ts === editingBaseTs; });
+    if (idx !== -1) { r.ts = editingBaseTs; db.base[idx] = r; }
+    editingBaseTs = null;
+    g('b-edit-banner').classList.remove('show');
+    g('b-form-title').innerHTML = '<div class="icon">💧</div> רשומת בסיס חדשה';
+    g('b-save-btn').textContent = '💾 שמור רשומה';
+    toast('✓ רשומת בסיס עודכנה!');
+  } else {
+    r.ts = Date.now();
+    db.base.push(r);
+    toast('✓ רשומת בסיס נשמרה!');
+  }
+  persist(); renderBaseList(); renderDash();
+}
+
+function editBase(ts) {
+  var r = db.base.find(function(x) { return x.ts === ts; });
+  if (!r) return;
+  editingBaseTs = ts;
+  // fill form
+  g('b-id').value = r.id; g('b-op').value = r.op || ''; g('b-date').value = r.date;
+  g('b-method').value = r.method || ''; g('b-filter').value = r.filter || ''; g('b-blend').value = r.blend || '';
+  g('b-gel').value = r.gel || ''; g('b-water').value = r.water || ''; g('b-final').value = r.final || '';
+  g('b-leftover').value = r.leftover || ''; g('b-soakc').value = r.soakc || '';
+  g('b-soakt-h').value = r.soakt_h || (r.soakt || '');  // backwards compat
+  g('b-soakt-d').value = r.soakt_d || '';
+  g('b-decision').value = r.decision || ''; g('b-notes').value = r.notes || '';
+  ['clarity','slime','bitter','smell','mouth','fit'].forEach(function(k) {
+    g('bs-'+k).value = r.scores[k]; sv('bsv-'+k, r.scores[k]);
+  });
+  // show banner
+  g('b-edit-id-label').textContent = r.id;
+  g('b-edit-banner').classList.add('show');
+  g('b-form-title').innerHTML = '<div class="icon">✏️</div> עריכת רשומה — ' + r.id;
+  g('b-save-btn').textContent = '💾 עדכן רשומה';
+  // scroll to form
+  g('pane-base').querySelector('.card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function cancelEditBase() {
+  editingBaseTs = null;
+  g('b-edit-banner').classList.remove('show');
+  g('b-form-title').innerHTML = '<div class="icon">💧</div> רשומת בסיס חדשה';
+  g('b-save-btn').textContent = '💾 שמור רשומה';
+  clearForm('base');
+}
+
+function renderBaseList() {
+  var el = g('base-list');
+  g('base-count').textContent = db.base.length + ' רשומות';
+  if (!db.base.length) { el.innerHTML = '<div class="empty"><div class="empty-icon">💧</div><p>אין רשומות בסיס עדיין</p></div>'; return; }
+  el.innerHTML = db.base.slice().reverse().map(function(r) {
+    var avg = (r.scores.clarity + r.scores.slime + r.scores.bitter + r.scores.smell + r.scores.mouth + r.scores.fit) / 6;
+    return '<div class="record-card">' +
+      '<div class="record-header"><span class="record-id">💧 ' + r.id + '</span>' +
+      '<div style="display:flex;gap:6px;align-items:center">' + decisionBadge(r.decision) +
+      '<button class="btn btn-sm" onclick="editBase(' + r.ts + ')" style="color:var(--green-600);border-color:var(--green-100)">✏️ עריכה</button>' +
+      '<button class="btn btn-sm btn-danger" onclick="del(\'base\',' + r.ts + ')">מחק</button></div></div>' +
+      '<div class="record-meta">' + r.date + (r.op ? ' · ' + r.op : '') + (r.method ? ' · ' + r.method : '') + (r.filter ? ' · ' + r.filter : '') + '</div>' +
+      '<div class="record-scores">' +
+      (r.gel ? '<span>ג\'ל: <strong>' + r.gel + 'g</strong></span>' : '') +
+      (r.water ? '<span>מים: <strong>' + r.water + 'g</strong></span>' : '') +
+      (r.final ? '<span>נוזל: <strong>' + r.final + 'g</strong></span>' : '') +
+      (r.soakt_display ? '<span>השרייה: <strong>' + r.soakt_display + '</strong></span>' : (r.soakt ? '<span>השרייה: <strong>' + r.soakt + " דק'</strong></span>" : '')) +
+      '<span>ממוצע: <strong>' + avg.toFixed(1) + '/10</strong></span>' +
+      '</div>' +
+      (r.notes ? '<div class="record-notes">"' + r.notes + '"</div>' : '') +
+      '</div>';
+  }).join('');
+}
+
+// ── SAVE FLAVOR ───────────────────────────────────
+function saveFlavor() {
+  if (!gv('f-id').trim()) { toast('נא להזין מזהה'); return; }
+  var r = {
+    id: gv('f-id').trim(), base: gv('f-base'), date: gv('f-date'),
+    family: gv('f-family'), carb: gv('f-carb'), imm: gv('f-imm'),
+    amounts: { liquid: gv('f-liquid'), soda: gv('f-soda'), lime: gv('f-lime'), lemon: gv('f-lemon'), salt: gv('f-salt'), mint: gv('f-mint'), basil: gv('f-basil'), cuke: gv('f-cuke'), calen: gv('f-calen'), extra: gv('f-extra') },
+    scores: { fresh: +gv('fs-fresh'), acid: +gv('fs-acid'), slime: +gv('fs-slime'), bitter: +gv('fs-bitter'), total: +gv('fs-total') },
+    buy: gv('f-buy'), decision: gv('f-decision'), notes: gv('f-notes'), ts: Date.now()
+  };
+  db.flavor.push(r); persist(); renderFlavorList(); renderDash();
+  toast('✓ ניסוי טעם נשמר!');
+}
+
+function renderFlavorList() {
+  var el = g('flavor-list');
+  g('flavor-count').textContent = db.flavor.length + ' ניסויים';
+  if (!db.flavor.length) { el.innerHTML = '<div class="empty"><div class="empty-icon">🍋</div><p>אין ניסויי טעם עדיין</p></div>'; return; }
+  el.innerHTML = db.flavor.slice().reverse().map(function(r) {
+    var ingr = [];
+    var am = r.amounts;
+    if (+am.lime > 0) ingr.push('ליים ' + am.lime + 'g');
+    if (+am.lemon > 0) ingr.push('לימון ' + am.lemon + 'g');
+    if (+am.salt > 0) ingr.push('מלח ' + am.salt + 'g');
+    if (+am.mint > 0) ingr.push('נענע ' + am.mint + 'g');
+    if (+am.basil > 0) ingr.push('בזיליקום ' + am.basil + 'g');
+    if (+am.cuke > 0) ingr.push('מלפפון ' + am.cuke + 'g');
+    if (+am.calen > 0) ingr.push('קלנדולה ' + am.calen + 'g');
+    if (am.extra) ingr.push(am.extra);
+    return '<div class="record-card">' +
+      '<div class="record-header"><span class="record-id">🍋 ' + r.id + '</span>' +
+      '<div style="display:flex;gap:6px;align-items:center">' + decisionBadge(r.decision) +
+      '<button class="btn btn-sm btn-danger" onclick="del(\'flavor\',' + r.ts + ')">מחק</button></div></div>' +
+      '<div class="record-meta">' + r.date + (r.base ? ' · בסיס ' + r.base : '') + (r.family ? ' · ' + r.family : '') + (r.carb ? ' · ' + r.carb : '') + '</div>' +
+      (ingr.length ? '<div class="tags">' + ingr.map(function(i) { return '<span class="tag">' + i + '</span>'; }).join('') + '</div>' : '') +
+      '<div class="record-scores">' +
+      '<span>ציון כולל: <strong>' + r.scores.total + '</strong></span>' +
+      '<span>רעננות: <strong>' + r.scores.fresh + '</strong></span>' +
+      '<span>חומציות: <strong>' + r.scores.acid + '</strong></span>' +
+      (r.buy ? '<span>קנייה: <strong>' + r.buy + '</strong></span>' : '') +
+      '</div>' +
+      (r.notes ? '<div class="record-notes">"' + r.notes + '"</div>' : '') +
+      '</div>';
+  }).join('');
+}
+
+// ── SAVE PANEL ────────────────────────────────────
+function savePanel() {
+  if (!gv('p-name').trim()) { toast('נא להזין שם טועם'); return; }
+  var r = {
+    name: gv('p-name').trim(), sample: gv('p-sample'), date: gv('p-date'),
+    context: gv('p-context'), reaction: gv('p-reaction'),
+    pct: gv('p-pct'), price: gv('p-price'),
+    scores: { fresh: +gv('ps-fresh'), taste: +gv('ps-taste'), mouth: +gv('ps-mouth') },
+    buy: gv('p-buy'), notes: gv('p-notes'), ts: Date.now()
+  };
+  db.panel.push(r); persist(); renderPanelList(); renderDash();
+  toast('✓ טעימה נשמרה!');
+}
+
+function renderPanelList() {
+  var el = g('panel-list');
+  g('panel-count').textContent = db.panel.length + ' טעימות';
+  if (!db.panel.length) { el.innerHTML = '<div class="empty"><div class="empty-icon">👥</div><p>אין טעימות עדיין</p></div>'; return; }
+  el.innerHTML = db.panel.slice().reverse().map(function(r) {
+    return '<div class="record-card">' +
+      '<div class="record-header">' +
+      '<div style="display:flex;align-items:center;gap:10px">' +
+      '<div class="avatar">' + r.name.charAt(0).toUpperCase() + '</div>' +
+      '<div><div style="font-weight:600">' + r.name + '</div>' +
+      '<div class="record-meta" style="margin:0">' + r.date + (r.sample ? ' · דגימה ' + r.sample : '') + (r.context ? ' · ' + r.context : '') + '</div></div></div>' +
+      '<button class="btn btn-sm btn-danger" onclick="del(\'panel\',' + r.ts + ')">מחק</button></div>' +
+      (r.reaction ? '<div style="font-size:13px;background:var(--gray-50);border-radius:8px;padding:10px 12px;margin:10px 0;border-right:3px solid var(--green-400)">"' + r.reaction + '"</div>' : '') +
+      '<div class="record-scores">' +
+      '<span>טעם: <strong>' + r.scores.taste + '</strong></span>' +
+      '<span>רעננות: <strong>' + r.scores.fresh + '</strong></span>' +
+      '<span>תחושת פה: <strong>' + r.scores.mouth + '</strong></span>' +
+      (r.pct ? '<span>שתה: <strong>' + r.pct + '%</strong></span>' : '') +
+      (r.price ? '<span>מוכן לשלם: <strong>₪' + r.price + '</strong></span>' : '') +
+      (r.buy ? '<span>קנייה: <strong>' + r.buy + '</strong></span>' : '') +
+      '</div>' +
+      (r.notes ? '<div class="record-notes">' + r.notes + '</div>' : '') +
+      '</div>';
+  }).join('');
+}
+
+// ── DELETE ────────────────────────────────────────
+function del(type, ts) {
+  if (!confirm('למחוק את הרשומה?')) return;
+  db[type] = db[type].filter(function(r) { return r.ts !== ts; });
+  persist();
+  if (type === 'base') renderBaseList();
+  if (type === 'flavor') renderFlavorList();
+  if (type === 'panel') renderPanelList();
+  renderDash();
+}
+
+// ── DASHBOARD ─────────────────────────────────────
+function renderDash() {
+  g('d-base').textContent = db.base.length;
+  g('d-flavor').textContent = db.flavor.length;
+  g('d-panel').textContent = db.panel.length;
+  var w = db.base.filter(function(r) { return r.decision === 'Winner'; }).length +
+          db.flavor.filter(function(r) { return r.decision === 'Winner'; }).length;
+  g('d-winners').textContent = w;
+
+  var all = [].concat(
+    db.base.map(function(r) { return { icon: '💧', label: 'בסיס ' + r.id, date: r.date, decision: r.decision, ts: r.ts }; }),
+    db.flavor.map(function(r) { return { icon: '🍋', label: 'טעם ' + r.id, date: r.date, decision: r.decision, ts: r.ts }; }),
+    db.panel.map(function(r) { return { icon: '👤', label: r.name, date: r.date, decision: '', ts: r.ts }; })
+  ).sort(function(a, b) { return b.ts - a.ts; }).slice(0, 10);
+
+  var el = g('dash-activity');
+  if (!all.length) {
+    el.innerHTML = '<div class="empty"><div class="empty-icon">🌿</div><p>ברוך הבא! התחל בכרטיסיית "בסיס אלוורה"</p></div>';
+    return;
+  }
+  el.innerHTML = all.map(function(r) {
+    return '<div class="activity-item">' +
+      '<div style="font-size:20px;width:34px;text-align:center">' + r.icon + '</div>' +
+      '<div class="activity-text"><strong>' + r.label + '</strong>' +
+      (r.decision ? ' ' + decisionBadge(r.decision) : '') + '</div>' +
+      '<div class="activity-date">' + r.date + '</div></div>';
+  }).join('');
+}
+
+// ── COMPARE ───────────────────────────────────────
+function renderCompareSelect() {
+  var sel = g('cmp-select');
+  sel.innerHTML = '';
+  if (!db.flavor.length) { sel.innerHTML = '<option disabled>אין ניסויי טעם עדיין</option>'; return; }
+  db.flavor.forEach(function(r) {
+    var o = document.createElement('option');
+    o.value = r.ts;
+    o.textContent = r.id + (r.family ? ' · ' + r.family : '') + ' (ציון: ' + r.scores.total + ')';
+    sel.appendChild(o);
+  });
+}
+
+function runCompare() {
+  var sel = g('cmp-select');
+  var chosen = Array.from(sel.selectedOptions).map(function(o) { return +o.value; }).slice(0, 4);
+  var cmp = g('cmp-result');
+  if (!chosen.length) { cmp.innerHTML = '<div class="empty"><p>בחר לפחות דגימה אחת</p></div>'; return; }
+  var items = chosen.map(function(ts) { return db.flavor.find(function(r) { return r.ts === ts; }); }).filter(Boolean);
+  var keys = ['fresh', 'acid', 'slime', 'bitter', 'total'];
+  var labels = { fresh: 'רעננות', acid: 'חומציות', slime: 'ריריות', bitter: 'מרירות', total: 'ציון כולל' };
+  var best = items.reduce(function(a, b) { return b.scores.total > a.scores.total ? b : a; }, items[0]);
+
+  cmp.innerHTML = '<div class="compare-grid">' +
+    items.map(function(r) {
+      var isBest = r.ts === best.ts;
+      return '<div class="compare-card' + (isBest ? ' winner-card' : '') + '">' +
+        (isBest ? '<div style="font-size:11px;color:var(--green-600);font-weight:600;margin-bottom:6px">🏆 הטוב ביותר</div>' : '') +
+        '<h3>' + r.id + (r.family ? '<span style="font-weight:400;font-size:12px;color:var(--text-muted)"> · ' + r.family + '</span>' : '') + '</h3>' +
+        keys.map(function(k) {
+          return '<div class="compare-row"><span class="lbl">' + labels[k] + '</span>' + scoreBar(r.scores[k]) + '</div>';
+        }).join('') +
+        '<div style="margin-top:8px;display:flex;gap:6px;align-items:center">' + decisionBadge(r.decision) +
+        (r.buy ? '<span class="badge" style="background:var(--blue-50);color:var(--blue-600)">' + r.buy + '</span>' : '') + '</div>' +
+        (r.notes ? '<div class="record-notes">' + r.notes + '</div>' : '') +
+        '</div>';
+    }).join('') + '</div>';
+}
+
+// ── EXPORT CSV ────────────────────────────────────
+function exportCSV() {
+  var rows = [['סוג','מזהה','תאריך','ציון','החלטה','הערות']];
+  db.base.forEach(function(r) {
+    var avg = (r.scores.clarity + r.scores.slime + r.scores.bitter + r.scores.smell + r.scores.mouth + r.scores.fit) / 6;
+    rows.push(['בסיס', r.id, r.date, avg.toFixed(1), r.decision, r.notes]);
+  });
+  db.flavor.forEach(function(r) { rows.push(['טעם', r.id, r.date, r.scores.total, r.decision, r.notes]); });
+  db.panel.forEach(function(r) { rows.push(['טעימה', r.name, r.date, r.scores.taste, r.buy, r.notes]); });
+
+  var csv = rows.map(function(r) { return r.map(function(c) { return '"' + String(c || '').replace(/"/g, '""') + '"'; }).join(','); }).join('\n');
+  var blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+  var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'aloe-export.csv'; a.click();
+}
+
+// ── RESET ─────────────────────────────────────────
+function confirmReset() {
+  if (confirm('למחוק את כל הנתונים? פעולה זו אינה הפיכה.')) {
+    db = { base: [], flavor: [], panel: [] }; persist(); renderDash();
+    toast('הנתונים נמחקו');
+  }
+}
+
+// ── INIT ──────────────────────────────────────────
+renderDash();
+renderBaseList();
+renderFlavorList();
+renderPanelList();
+</script>
+</body>
+</html>
